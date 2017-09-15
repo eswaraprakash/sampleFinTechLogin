@@ -1,17 +1,3 @@
-# F1 - smava recruitment tasks for front-end developers
-
-Hello! We are very happy to see that you have reached this challenge! The task requires some creativity, we are giving you some description, which is very close to the stuff, that we are actually working in smava.
-
-Solutions need to be provided as a bunch of files. For this task you may want to use some build tools, so we are expecting source code from you but not the minified output because the **code quality** is also important for us.
-
-We wish you best of luck and hope you will have a nice time while solving this task!
-
-
-## Make a registration form
-
-We would kindly ask you to show us your ability to create a dynamic form. You are allowed to choose any library or framework that will help you to get the job done, although we would prefer to see you working with React.
-Please don't spend more than 3 hours on this task. Please make sure that at the end you commented on what you have not managed to finish and please outline how you would solve the remaining work including an estimate of how much time it would have approximately taken you.
-
 
 ### Technical description
 
