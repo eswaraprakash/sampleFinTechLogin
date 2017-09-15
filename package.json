@@ -1,0 +1,40 @@
+{
+  "name": "Eswara-APP",
+  "version": "0.1.1",
+  "description": "Eswara-APP",
+  "main": "Index.js",
+  "repository": {
+    "git": "https://cto-github.cisco.com/DevNetDataPlatform/iotdemo.git"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --port 8080 --devtool eval --progress --colors",
+    "dev": "webpack --watch --progress --colors",
+    "build": "webpack -p --progress --profile --colors"
+  },
+  "author": "eswara",
+  "license": "Cisco",
+  "private": true,
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "css-loader": "^0.23.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
+  },
+  "dependencies": {
+    "react": "15.4.2",
+    "react-dom": "15.4.2",
+    "react-tap-event-plugin": "^2.0.1",
+    "material-ui": "^0.18.7"
+  }
+}
