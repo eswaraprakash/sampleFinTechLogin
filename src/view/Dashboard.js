@@ -1,157 +1,138 @@
 var React = require('react');
-require('./Dashboard.less');
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+require('./Index.less');
+var HOST1 = require('../config.js').HOST;
+import io from 'socket.io-client';
 import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
-import Dialog from 'material-ui/Dialog';
+import Checkbox from 'material-ui/Checkbox';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
-var BankAccountItem = React.createClass({
-    getInitialState: function() {
-        return {ibanErr:'',bankErr:''};
-    },
-    __onIbanChange: function(event) {
-        var value = event.target.value;
-        if (IBAN.isValid(value)){
-            this.setState({ibanErr:''});
-            this.props.onChange && this.props.onChange('iban', value);
-        } else {
-            this.setState({ibanErr:'IBAN is not Valid'});
-            event.target.focus();
-        }
-    },
-    __onbnameChange: function(event) {
-        var value =event.target.value;
-        if (value ===''){
-            this.setState({bankErr:"Bank name Should not be Blank"});
-            event.target.focus();
-        } else {
-            this.setState({bankErr:''});
-            this.props.onChange && this.props.onChange('bankName', value);
-        }
-    },
-    render: function() {
-        return (
-            <li className="accountItem">
-                    <div >
-                        <TextField name='iban' floatingLabelText="IBAN" onBlur ={(event)=>this.__onIbanChange(event)} errorText={this.state.ibanErr}/>
-                        <span>
-                        <i className="fa fa-remove" onClick={this.props.onRemove}/></span>
-                        <TextField name='bankName' floatingLabelText="Bank Name" onBlur ={(event)=>this.__onbnameChange(event)} errorText={this.state.bankErr}/>
-                    </div>
-            </li>
-        );
-    }
-});
 
 module.exports = React.createClass({
-    getInitialState: function() {
-        return {
-            bankac: [],
-            fnameErr:'',
-            lnameErr:'',
-            emailErr:'',
-            addAccErr:'',
-            fName:'',
-            lName:'',
-            email:'',
-            formData:{},
-            logsBox:false
-        };
-    },
-    __removeItem: function(name, index) {
-        this.state[name].splice(index, 1);
-        this.state[name] = this.state[name];
-        this.forceUpdate();
-    },
-    __onAddBankAccountItem: function() {
-        this.setState({addAccErr:''});
-        this.state.bankac.push({iban: '', bankName: ''});
-        this.setState({bankac: this.state.bankac});
-    },
-    __onNameValidate: function(event){
-        var value=event.target.value, regEx = /^[A-z]+$/;
-        if(value.search(regEx) == -1){
-            if(event.target.id ==='firstName'){
-                this.setState({fnameErr:'FirstName Should only contain Alphabets'});
-                event.target.focus();
-            } else if (event.target.id ==='lastName') {
-                this.setState({lnameErr:'LastName Should only contain Alphabets'});
-                event.target.focus();
-            }
-		} else {
-            if(event.target.id ==='firstName'){
-                this.setState({fName:value});
-            } else if(event.target.id ==='lastName') {
-                this.setState({lName:value});
-            }
-            this.setState({fnameErr:'',lnameErr:''});
-        }
-    },
-    __onEmailValidate: function(event){
-        var value = event.target.value,
-        regEx= /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$/;
-        if(value.search(regEx) == -1){
-            this.setState({emailErr:'Email is not valid'});
-            event.target.focus();
-		} else{
-            this.setState({email:value,emailErr:''});
-        }
-    },
-    __formSubmit:function(){
-        var formData={};
-        if(this.state.bankac.length==0){
-            this.setState({addAccErr:'Add Atleast One Bank Account'});
-        } else{
-            formData.firstName=this.state.fName;
-            formData.lastName=this.state.lName;
-            formData.email=this.state.email;
-            formData.bankAccounts=[];
-            formData.bankAccounts=this.state.bankac;
-            this.setState({logsBox:true, formData:formData});
-        }
+	getInitialState:function(){
+		return {
+			cycle:[],
+			rul:[],
+			config:{},
+			layout:{},
+			data:[],
+			sdata:[],
+			sid:[],
+			checkbox:[]
+		};
+	},
+	componentDidMount:function(){
+		this.__getConnected();
+		Session.jump('/Dashboard');
+	},
 
-    },
+	__getConnected:function(){
+           var socket = io.connect(HOST1 + '/socket'),
+		   _self = this;
+		   socket.emit('on_connect');
+		   socket.emit('on_message_predict');
+		   socket.emit('on_message_sensor','s1,s2,s3');
+		   socket.on('message_response_predict', function(msg) {
+		   		//console.log(msg);
+				msg = JSON.parse(msg);
+				var result = msg.result;
+				result = JSON.parse(result);
+				_self.state.rul.push(result.rul);
+				_self.state.cycle.push(result.cycle);
+				//console.log(_self.state);
+		   });
+		   socket.on('message_response_sensor', function(msg1) {
+			   //console.log(msg1);
+			   var result = JSON.parse(msg1.result.edata);
+			   _self.state.sdata.push(result);
+			   _self.state.sdata.map(function(item,index){
+				   if(item&&item.length!==0){
+					   _self.state.checkbox.push(item.sid);
+				   }
+			   });
 
-    render: function() {
-        const style = {
-            height: 'auto',
-            width: 400,
-            margin: '3% 0 0 35%',
-            padding: 20,
-            textAlign: 'center'
-        };
-        var result= JSON.stringify(this.state.formData);
-        return (
-            <div className="rt-dashboard">
-                <MuiThemeProvider>
-                    <Paper style={style} zDepth={4}>
-                            <h3>Register Account</h3>
-                            <TextField id="firstName" floatingLabelText="First Name" onBlur ={(event)=>this.__onNameValidate(event)} errorText ={this.state.fnameErr}/>
-                            <TextField id="lastName" floatingLabelText="Last Name" onBlur ={(event)=>this.__onNameValidate(event)} errorText ={this.state.lnameErr}/>
-                            <TextField floatingLabelText="Email" onBlur ={(event)=>this.__onEmailValidate(event)} errorText ={this.state.emailErr}/>
-                            <RaisedButton style={{width:250, textAlign:'center'}} label="+Add Bank Account" primary={true} onClick={this.__onAddBankAccountItem}/>
-                            <div style={{color:'red'}}>{this.state.addAccErr}</div>
-                            {this.state.bankac.map(function(input, index) {
-                                    return <ul>
-                                        <BankAccountItem key={index} onChange={(key, value) => {
-                                            input[key] = value;
-                                        }} onRemove={() => this.__removeItem('bankac', index)}/>
-                                    </ul>;
-                                }.bind(this))
-                            }
-                        <RaisedButton style={{width:200, textAlign:'center', marginTop:10}} label="Submit" primary={true} onClick={this.__formSubmit}/>
-                    </Paper>
-                </MuiThemeProvider>
-                <MuiThemeProvider>
-                    <Dialog title="Form Result"
-                          actions={[ <RaisedButton label="close" primary={true} onClick={()=>this.setState({logsBox: false})} /> ]}
-                          modal={false} open={this.state.logsBox}
-                          onRequestClose={()=>this.setState({logsBox: false})}>
-                      {result}
-                    </Dialog>
-                </MuiThemeProvider>
-            </div>
-        );
-    }
+		  });
+    },
+	__renderChart:function(){
+			Highcharts.chart('RULDiagram', {
+			   chart: {
+				   type: 'spline',
+				   animation: Highcharts.svg, // don't animate in old IE
+				   marginRight: 10,
+				   events: {
+					   load: function () {
+						   _self.chartSeries = this.series[0];
+					   }
+				   }
+			   },
+			   title: {
+				   text: 'RUL Diagram'
+			   },
+			   xAxis: {
+				   type: 'datetime',
+				   tickPixelInterval: 150
+			   },
+			   yAxis: {
+				   title: {
+					   text: 'Value'
+				   },
+				   plotLines: [{
+					   value: 0,
+					   width: 1,
+					   color: '#808080'
+				   }]
+			   },
+			   tooltip: {
+				   formatter: function () {
+					   return '<b>' + this.series.name + '</b><br/>' +
+						   Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+						   Highcharts.numberFormat(this.y, 2);
+				   }
+			   },
+			   legend: {
+				   enabled: false
+			   },
+			   exporting: {
+				   enabled: false
+			   },
+			   series: [{
+				   name: 'RUL data',
+				   data: (function () {
+					   // generate an array of random data
+					   var data = [];
+						   data.push({
+							   x: this.state.rul,
+							   y: this.state.cycle
+						   });
+					   return data;
+				   }())
+			   }]
+		   });
+	},
+	render:function(){
+		const styles = {
+				  block: {
+				    maxWidth: 250,
+				  },
+				  checkbox: {
+				    marginBottom: 16,
+				  },
+				};
+		return (
+			<div id="parent_div">
+				<div id="RULDiagram" style={{marginTop:'2em'}}></div>
+				<ul id="sensor_diagram_checklist" style={styles.block}>
+						{
+							this.state.checkbox.map(function(item,index){
+								return <li>
+										<MuiThemeProvider>
+											<Checkbox key={index} label="Simple" style={styles.checkbox} />
+										</MuiThemeProvider>
+										</li>;
+							}.bind(this))
+						}
+				</ul>
+				<div id="sensory_diagram"></div>
+			</div>
+		);
+	}
 });

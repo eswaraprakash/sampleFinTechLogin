@@ -6,7 +6,7 @@ module.exports = {
     entry: {
         output: ['./app.entry.js']
     },
-    //devtool: 'eval',
+    devtool: 'eval',
     output: {
         path: path.join(__dirname, 'www', 'dist'),
         filename: '[name].bundle.js'
